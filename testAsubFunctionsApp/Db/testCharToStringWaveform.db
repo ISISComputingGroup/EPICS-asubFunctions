@@ -1,0 +1,28 @@
+record(waveform, "$(P)WFCHAR") 
+{
+  field(NELM, "400")
+  field(FTVL, "UCHAR") 
+  field(FLNK, "$(P)WFCTOS")
+}
+
+record(waveform, "$(P)WFSTRING")
+{
+  field(INP, "$(P)WFCHAR")
+  field(NELM, "10")
+  field(FTVL, "STRING") 
+}
+
+record(aSub, "$(P)WFCTOS")
+{
+  field(SNAM, "charToStringWaveform")
+  field(FTA, "UCHAR")
+  field(FTB, "ULONG")
+  field(NOA, "400")
+  field(INPA, "$(P)WFCHAR")
+  field(INPB, "$(P)WFCHAR.NORD")
+  field(OUTA, "$(P)WFSTRING")
+  field(FTVA, "STRING")
+  field(NOVA, "10")
+} 
+ 
+ 
