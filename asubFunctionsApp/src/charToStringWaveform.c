@@ -1,6 +1,7 @@
 #include <string.h>
-#include <aSubRecord.h>
 #include <registryFunction.h>
+#include <aSubRecord.h>
+
 #include <epicsExport.h>
 
 static long charToStringWaveform(aSubRecord *prec) 
@@ -8,6 +9,7 @@ static long charToStringWaveform(aSubRecord *prec)
 	const char* str_in = (const char*)(prec->a);
     epicsUInt32 len_in = *(epicsUInt32*)(prec->b);
     epicsOldString *str_out = (epicsOldString *)prec->vala;
+	epicsUInt32 len_out = 0;
     if (prec->noa < len_in) // check input space
 	{
 	    len_in = prec->noa;
@@ -18,7 +20,6 @@ static long charToStringWaveform(aSubRecord *prec)
 	    len_in = prec->nova * sizeof(epicsOldString);
 	}
 	memcpy(str_out, str_in, len_in);
-	epicsUInt32 len_out = 0;
 	if (len_in > 0)
 	{
 		len_out = 1 + (len_in - 1) / sizeof(epicsOldString);
@@ -27,7 +28,4 @@ static long charToStringWaveform(aSubRecord *prec)
     return 0; /* process output links */
 }
 
-extern "C" 
-{
 epicsRegisterFunction(charToStringWaveform); // must also be mentioned in asubFunctions.dbd
-}
