@@ -1,3 +1,12 @@
+/** @file charToStringWaveform.c
+ *  @author Freddie Akeroyd, STFC (freddie.akeroyd@stfc.ac.uk)
+ *
+ *  Copy a CHAR waveform record into a STRING waveform record. If this is done by
+ *  a normal CAPUT the character byte codes are not preserved
+ *
+ *  It expect the A input to be the waveform data and B to be "NORD" (number of elements)
+ *  it write its output to VALA
+ */
 #include <string.h>
 #include <registryFunction.h>
 #include <aSubRecord.h>
@@ -6,16 +15,16 @@
 
 static long charToStringWaveform(aSubRecord *prec) 
 {
-	const char* str_in = (const char*)(prec->a);
-    epicsUInt32 len_in = *(epicsUInt32*)(prec->b);
-    epicsOldString *str_out = (epicsOldString *)prec->vala;
+	const char* str_in = (const char*)(prec->a); /* waveform CHAR data */
+    epicsUInt32 len_in = *(epicsUInt32*)(prec->b); /* usually NORD from waveform */
+    epicsOldString* str_out = (epicsOldString*)prec->vala; /* epicsOldString is typedef for epics fixed length string */ 
 	epicsUInt32 len_out = 0;
-    if (prec->noa < len_in) // check input space
+    if (prec->noa < len_in) /* check input space */
 	{
 	    len_in = prec->noa;
 	}
-//	Maybe could use prec->nea ? Think it is set by db link but not by CA
-	if (prec->nova * sizeof(epicsOldString) < len_in) // check output space
+    /*	Maybe could use prec->nea ? Think it is set by db link but not by CA */
+	if (prec->nova * sizeof(epicsOldString) < len_in) /* check output space */
 	{
 	    len_in = prec->nova * sizeof(epicsOldString);
 	}
@@ -28,4 +37,4 @@ static long charToStringWaveform(aSubRecord *prec)
     return 0; /* process output links */
 }
 
-epicsRegisterFunction(charToStringWaveform); // must also be mentioned in asubFunctions.dbd
+epicsRegisterFunction(charToStringWaveform); /* must also be mentioned in asubFunctions.dbd */
