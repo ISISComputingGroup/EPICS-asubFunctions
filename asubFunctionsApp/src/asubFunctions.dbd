@@ -1,1 +1,2 @@
 function(charToStringWaveform)
+function(stringConcatWithCtrlB)
