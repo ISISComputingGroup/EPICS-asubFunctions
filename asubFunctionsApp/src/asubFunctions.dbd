@@ -1,2 +1,7 @@
 function(charToStringWaveform)
 function(stringConcatWithCtrlB)
+function(addToSet)
+function(removeFromSet)
+function(getSetItems)
+function(getSetItemCount)
+
