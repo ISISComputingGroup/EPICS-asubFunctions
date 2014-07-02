@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <cstring>
 
 #include <epicsGuard.h>
 #include <epicsMutex.h>
