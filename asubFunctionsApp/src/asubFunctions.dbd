@@ -4,4 +4,6 @@ function(addToSet)
 function(removeFromSet)
 function(getSetItems)
 function(getSetItemCount)
+function(displayMotorMSTA)
+
 
