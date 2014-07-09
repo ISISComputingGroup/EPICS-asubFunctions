@@ -2,10 +2,9 @@
  *  @author Freddie Akeroyd, STFC (freddie.akeroyd@stfc.ac.uk)
  *  @ingroup asub_functions
  *
- *  Copy a CHAR waveform record into a STRING waveform record. If this is done by
- *  a normal CAPUT the character byte codes are not preserved
+ *  Split a CHAR waveform record into a STRING waveform record. 
  *
- *  It expect the A input to be the waveform data and B to be "NORD" (number of elements)
+ *  It expect the A input to be the CHAR aveform data and B to be "NORD" (number of elements) and C to be the string of delimiters
  *  it write its output to VALA
  */
 #include <string.h>
@@ -33,7 +32,9 @@ static long splitToStringWaveform(aSubRecord *prec)
 	    len_in = prec->noa;
 	}
     /*	Maybe could use prec->nea ? Think it is set by db link but not by CA */
-	str_tmp = strdup(str_in);
+	str_tmp = malloc(1 + len_in);
+	strncpy(str_tmp, str_in, len_in);
+	str_tmp[len_in] = '\0';
 	str_ptr = strtok(str_tmp, delim_in[0]);
 	for(i = 0; str_ptr != NULL && i < prec->nova; ++i)
 	{
@@ -43,7 +44,7 @@ static long splitToStringWaveform(aSubRecord *prec)
 	}
 	len_out = i;
 	free(str_tmp);
-	for(i=len_out+1; i<prec->nova; ++i)
+	for(i=len_out; i<prec->nova; ++i)
 	{
 	    memset(str_out[i], '\0', sizeof(epicsOldString));
 	}
