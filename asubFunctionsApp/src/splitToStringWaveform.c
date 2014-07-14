@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <registryFunction.h>
 #include <aSubRecord.h>
+#include <menuFtype.h>
+#include <errlog.h>
 
 #include <epicsExport.h>
 /**
@@ -25,8 +27,13 @@ static long splitToStringWaveform(aSubRecord *prec)
 	int i;
     epicsUInt32 len_in = *(epicsUInt32*)(prec->b); /* usually NORD from waveform */
 	epicsOldString* delim_in = (epicsOldString*)(prec->c);
-    epicsOldString* str_out = (epicsOldString*)prec->vala; /* epicsOldString is typedef for epics fixed length string */ 
+    epicsOldString* str_out = (epicsOldString*)(prec->vala); /* epicsOldString is typedef for epics fixed length string */ 
 	epicsUInt32 len_out = 0;
+    if (prec->fta != menuFtypeCHAR || prec->ftb != menuFtypeULONG || prec->ftc != menuFtypeSTRING || prec->ftva != menuFtypeSTRING)
+	{
+         errlogPrintf("%s incorrect input type. A (CHAR), B (ULONG), C (STRING), VALA (STRING)", prec->name);
+		 return -1;
+	}
     if (prec->noa < len_in) /* check input space */
 	{
 	    len_in = prec->noa;

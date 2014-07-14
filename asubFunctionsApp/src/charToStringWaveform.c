@@ -11,6 +11,8 @@
 #include <string.h>
 #include <registryFunction.h>
 #include <aSubRecord.h>
+#include <menuFtype.h>
+#include <errlog.h>
 
 #include <epicsExport.h>
 /**
@@ -25,6 +27,11 @@ static long charToStringWaveform(aSubRecord *prec)
     epicsOldString* str_out = (epicsOldString*)prec->vala; /* epicsOldString is typedef for epics fixed length string */ 
 	epicsUInt32 len_out = 0;
 	epicsUInt32 max_out_bytes = prec->nova * sizeof(epicsOldString);
+    if (prec->fta != menuFtypeCHAR || prec->ftb != menuFtypeULONG || prec->ftva != menuFtypeSTRING)
+	{
+         errlogPrintf("%s incorrect input type. A (CHAR), B (ULONG), VALA (STRING)", prec->name);
+		 return -1;
+	}
     if (prec->noa < len_in) /* check input space */
 	{
 	    len_in = prec->noa;

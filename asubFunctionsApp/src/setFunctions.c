@@ -22,9 +22,9 @@ static long addToSet(aSubRecord *prec)
     epicsOldString* set_name = (epicsOldString*)prec->a; /* epicsOldString is typedef for epics fixed length string */ 
 	const char* item_value = (const char*)(prec->b); /* waveform CHAR data */
     epicsUInt32 max_len_item_value = *(epicsUInt32*)(prec->c); /* usually NORD from waveform */
-    if (prec->fta != menuFtypeSTRING || prec->ftb != menuFtypeCHAR || prec->ftc != menuFtypeLONG)
+    if (prec->fta != menuFtypeSTRING || prec->ftb != menuFtypeCHAR || prec->ftc != menuFtypeULONG)
 	{
-         errlogPrintf("%s incorrect input type. A (STRING), B (CHAR), C (LONG)", prec->name);
+         errlogPrintf("%s incorrect input type. A (STRING), B (CHAR), C (ULONG)", prec->name);
 		 return -1;
 	}
     if (prec->nob < max_len_item_value) /* check input space - not sure ->neb always gets set */
@@ -40,9 +40,9 @@ static long removeFromSet(aSubRecord *prec)
     epicsOldString* set_name = (epicsOldString*)prec->a; /* epicsOldString is typedef for epics fixed length string */ 
 	const char* item_value = (const char*)(prec->b); /* waveform CHAR data */
     epicsUInt32 max_len_item_value = *(epicsUInt32*)(prec->c); /* usually NORD from waveform */
-    if (prec->fta != menuFtypeSTRING || prec->ftb != menuFtypeCHAR || prec->ftc != menuFtypeLONG)
+    if (prec->fta != menuFtypeSTRING || prec->ftb != menuFtypeCHAR || prec->ftc != menuFtypeULONG)
 	{
-         errlogPrintf("%s incorrect input type. A (STRING), B (CHAR), C (LONG)", prec->name);
+         errlogPrintf("%s incorrect input type. A (STRING), B (CHAR), C (ULONG)", prec->name);
 		 return -1;
 	}
     if (prec->nob < max_len_item_value) /* check input space - not sure ->neb always gets set */
@@ -57,9 +57,9 @@ static long getSetItemCount(aSubRecord *prec)
 {
     epicsOldString* set_name = (epicsOldString*)prec->a; /* epicsOldString is typedef for epics fixed length string */ 
     int item_count = 0;
-    if (prec->fta != menuFtypeSTRING || prec->ftva != menuFtypeLONG)
+    if (prec->fta != menuFtypeSTRING || prec->ftva != menuFtypeULONG)
 	{
-         errlogPrintf("%s incorrect input type. A (STRING), VALA (LONG)", prec->name);
+         errlogPrintf("%s incorrect input type. A (STRING), VALA (ULONG)", prec->name);
 		 return -1;
 	}
     getSetItemCountImpl(*set_name, &item_count);
@@ -73,9 +73,9 @@ static long getSetItems(aSubRecord *prec)
     int item_count = 0;
     epicsOldString* set_name = (epicsOldString*)prec->a; /* epicsOldString is typedef for epics fixed length string */ 
 	char* item_value = (char*)(prec->vala); /* waveform CHAR data */
-    if (prec->fta != menuFtypeSTRING || prec->ftva != menuFtypeCHAR || prec->ftvb != menuFtypeLONG)
+    if (prec->fta != menuFtypeSTRING || prec->ftva != menuFtypeCHAR || prec->ftvb != menuFtypeULONG)
 	{
-         errlogPrintf("%s incorrect input type. A (STRING), VALA (CHAR), VALB (LONG)", prec->name);
+         errlogPrintf("%s incorrect input type. A (STRING), VALA (CHAR), VALB (ULONG)", prec->name);
 		 return -1;
 	}
 	getSetItemsImpl(*set_name, item_value, prec->nova, &(prec->neva), &item_count);

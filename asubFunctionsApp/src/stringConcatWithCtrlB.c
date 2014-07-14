@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <registryFunction.h>
 #include <aSubRecord.h>
+#include <menuFtype.h>
+#include <errlog.h>
 
 #include <epicsExport.h>
 /**
@@ -23,16 +25,26 @@ static long stringConcatWithCtrlB(aSubRecord *prec)
     epicsOldString* name_in = (epicsOldString*)(prec->a);
     epicsOldString* type_in = (epicsOldString*)(prec->b);
     epicsOldString* units_in = (epicsOldString*)(prec->c);
-	char* value_in = (char*)(prec->d); /* waveform CHAR data */
-    char* str_out = (char*)prec->vala; /* waveform CHAR data */
+	char* value_in = (char*)(prec->d); 
+    char* str_out = (char*)(prec->vala); /* waveform CHAR data */
 	epicsUInt32 max_bytes_out = prec->nova;
     epicsUInt32 len_value_in = prec->nod;
     unsigned n = 0, j;
     int free_value_in  = 0;
-    if (prec->ftd == epicsFloat64T)
+    if (prec->fta != menuFtypeSTRING || prec->ftb != menuFtypeSTRING || prec->ftc != menuFtypeSTRING || prec->ftva != menuFtypeCHAR)
+	{
+         errlogPrintf("%s incorrect input type. A (STRING), B (STRING), C (STRING), VALA (CHAR)", prec->name);
+		 return -1;
+	}
+    if (prec->ftd != menuFtypeCHAR && prec->ftd != menuFtypeDOUBLE)
+	{
+         errlogPrintf("%s incorrect input type. D (CHAR or DOUBLE)", prec->name);
+		 return -1;
+	}
+    if (prec->ftd == menuFtypeDOUBLE)
     {
         value_in = malloc(32);
-        sprintf(value_in, "%g", *(epicsFloat64*)prec->d);
+        sprintf(value_in, "%g", *(double*)prec->d);
         len_value_in = strlen(value_in);
         free_value_in = 1;
     }
@@ -78,6 +90,15 @@ static long stringConcatWithCtrlB(aSubRecord *prec)
     {
         str_out[j] = '\0';
     }
+//	str_out[max_bytes_out-1] = '\0';
+//	if (n < max_bytes_out)
+//	{
+//       prec->neva = n + 1; /* +1 to make sure a NULL byte is included */
+//	}
+//	else
+//	{
+ //       prec->neva = max_bytes_out;
+//	}
     prec->neva = n;
     if (free_value_in)
     {
