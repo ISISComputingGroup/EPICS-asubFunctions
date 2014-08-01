@@ -5,6 +5,6 @@ function(removeFromSet)
 function(getSetItems)
 function(getSetItemCount)
 function(displayMotorMSTA)
+function(displayMotorMSTASimple)
 function(splitToStringWaveform)
-
 

@@ -57,4 +57,43 @@ static long displayMotorMSTA(aSubRecord *prec)
     return 0; /* process output links */
 }
 
+static long displayMotorMSTASimple(aSubRecord *prec) 
+{
+    char buffer[512];
+    epicsUInt32 msta = *(epicsUInt32*)(prec->a); 
+	epicsOldString* str_out = (epicsOldString*)prec->vala;
+    char* msta_display = (char*)str_out; 
+	int n, max_len = sizeof(epicsOldString);
+    if (prec->fta != menuFtypeULONG || prec->ftva != menuFtypeSTRING)
+	{
+         errlogPrintf("%s incorrect input type. A (ULONG), VALA (STRING)", prec->name);
+		 return -1;
+	}
+	buffer[0] = '\0';
+	if (msta & 0x400) // moving
+	{
+		strcat(buffer, (msta & 0x1) ? "MOVING +" : "MOVING -");
+	}
+	else if (msta & 0x2) // done
+	{
+		strcat(buffer, "STATIONARY");
+	}
+	strcat(buffer, ((msta & 0x40) ? " (SLIP_STALL)" : "") );
+//	strcat(buffer, ((msta & 0x200) ? " (PROBLEM)" : "") );
+//	strcat(buffer, ((msta & 0x1000) ? " (COMM_ERR)" : "") );
+	n = strlen(buffer);
+	strncpy(msta_display, buffer, max_len);
+	if (n >= max_len)
+	{
+		msta_display[max_len-1] = '\0';
+	}
+	else
+	{
+	    memset(msta_display + n, '\0', max_len - n); 
+	}
+	prec->neva = 1;
+    return 0; /* process output links */
+}
+
 epicsRegisterFunction(displayMotorMSTA); /* must also be mentioned in asubFunctions.dbd */
+epicsRegisterFunction(displayMotorMSTASimple); /* must also be mentioned in asubFunctions.dbd */
