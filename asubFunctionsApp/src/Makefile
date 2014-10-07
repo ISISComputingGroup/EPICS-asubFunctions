@@ -17,6 +17,7 @@ DBD += asubFunctions.dbd
 
 # specify all source files to be compiled and added to the library
 asubFunctions_SRCS += charToStringWaveform.c stringConcatWithCtrlB.c setFunctions.c setFunctionsImpl.cpp displayMotorMSTA.c splitToStringWaveform.c
+asubFunctions_SRCS += genData.c
 
 asubFunctions_LIBS += $(EPICS_BASE_IOC_LIBS)
 

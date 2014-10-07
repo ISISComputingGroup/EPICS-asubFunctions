@@ -1,0 +1,31 @@
+#
+# write a string with       CAPUT GDSTRING "1;0.5;10"
+# then read it back with    CAGET GDDOUBLE
+#
+record(waveform, "$(P)GDSTRING") 
+{
+  field(FTVL, "STRING") 
+  field(NELM, "1")
+  field(FLNK, "$(P)GENDATA")
+}
+
+record(waveform, "$(P)GDDOUBLE")
+{
+  field(FTVL, "DOUBLE") 
+  field(NELM, "1000")
+}
+
+record(aSub, "$(P)GENDATA")
+{
+  field(SNAM, "genData")
+  field(INPA, "$(P)GDSTRING")
+  field(FTA, "STRING")
+  field(NOA, "1")
+  field(FTVA, "DOUBLE")
+  field(NOVA, "1000")
+  field(OUTA, "$(P)GDDOUBLE")
+  field(FTVB, "ULONG")
+  field(NOVB, "1")
+} 
+ 
+ 
