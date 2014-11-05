@@ -13,6 +13,7 @@
 #include <aSubRecord.h>
 #include <menuFtype.h>
 #include <errlog.h>
+#include <epicsString.h>
 
 #include <epicsExport.h>
 /**
@@ -23,7 +24,7 @@
 static long splitToStringWaveform(aSubRecord *prec) 
 {
 	const char* str_in = (const char*)(prec->a); /* waveform CHAR data */
-	char *str_tmp, *str_ptr;
+	char *str_tmp, *str_ptr, *saveptr;
 	int i;
     epicsUInt32 len_in = *(epicsUInt32*)(prec->b); /* usually NORD from waveform */
 	epicsOldString* delim_in = (epicsOldString*)(prec->c);
@@ -42,12 +43,12 @@ static long splitToStringWaveform(aSubRecord *prec)
 	str_tmp = malloc(1 + len_in);
 	strncpy(str_tmp, str_in, len_in);
 	str_tmp[len_in] = '\0';
-	str_ptr = strtok(str_tmp, delim_in[0]);
+	str_ptr = epicsStrtok_r(str_tmp, delim_in[0], &saveptr);
 	for(i = 0; str_ptr != NULL && i < prec->nova; ++i)
 	{
 	    memset(str_out[i], '\0', sizeof(epicsOldString));
 	    strncpy(str_out[i], str_ptr, sizeof(epicsOldString)-1);
-	    str_ptr = strtok(NULL, delim_in[0]);
+	    str_ptr = epicsStrtok_r(NULL, delim_in[0], &saveptr);
 	}
 	len_out = i;
 	free(str_tmp);
