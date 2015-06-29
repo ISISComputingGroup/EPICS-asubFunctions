@@ -9,5 +9,4 @@ function(displayMotorMSTASimple)
 function(splitToStringWaveform)
 function(genData)
 function(incrementor)
-
-
+function(copyArgA)
