@@ -1,0 +1,36 @@
+#
+# write a char array with   CAPUT -S WFCHAR "value"
+# then read it back with    CAGET WFSTRING
+#
+# epics fixed string size is 40 chars, hence 400 and 10 below
+# however the routine will safely truncate if there is a mismatch
+#
+record(waveform, "$(P)WFSPLITCHAR") 
+{
+  field(FTVL, "CHAR") 
+  field(NELM, "400")
+  field(FLNK, "$(P)WFCSPLIT")
+}
+
+record(stringin, "$(P)WFSPLITSEP") 
+{
+  field(VAL, ";")
+}
+
+record(aSub, "$(P)WFCSPLIT")
+{
+  field(SNAM, "splitCharWaveform")
+  field(INPA, "$(P)WFSPLITCHAR")
+  field(FTA, "CHAR")
+  field(NOA, "400")
+  field(INPB, "$(P)WFCHAR.NORD")
+  field(FTB, "ULONG")
+  field(INPC, "$(P)WFSPLITSEP")
+  field(FTC, "STRING")
+  field(FTVA, "STRING")
+  field(FTVB, "STRING")
+  field(FTVC, "STRING")
+  field(FTVU, "ULONG")
+} 
+ 
+ 
