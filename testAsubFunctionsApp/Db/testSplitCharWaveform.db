@@ -30,6 +30,7 @@ record(aSub, "$(P)WFCSPLIT")
   field(FTVA, "STRING")
   field(FTVB, "STRING")
   field(FTVC, "STRING")
+  field(FTVU, "ULONG")
 } 
  
  
