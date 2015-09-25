@@ -90,16 +90,16 @@ static long stringConcatWithCtrlB(aSubRecord *prec)
     {
         str_out[j] = '\0';
     }
-//	str_out[max_bytes_out-1] = '\0';
-//	if (n < max_bytes_out)
-//	{
-//       prec->neva = n + 1; /* +1 to make sure a NULL byte is included */
-//	}
-//	else
-//	{
- //       prec->neva = max_bytes_out;
-//	}
-    prec->neva = n;
+	/* we need to include NULL byte in NEVA - this is so it gets copied across to target char waveform, otherwise the
+	   target is not guaranteed to be NULL terminated */
+	if (n < max_bytes_out)
+	{
+        prec->neva = n + 1; /* +1 to make sure a NULL byte is included */
+	}
+	else
+	{
+        prec->neva = n;
+	}
     if (free_value_in)
     {
         free(value_in);
