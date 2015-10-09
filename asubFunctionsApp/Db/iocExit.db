@@ -1,13 +1,13 @@
-record(longin, "$(P)$(Q)EXITIOC")
+record(longout, "$(P)$(Q)IOCEXIT")
 {
     field(DESC, "Exit IOC")
     field(VAL, 0)
-	field(FLNK, "$(P)$(Q)_EXITIOC")
+	field(FLNK, "$(P)$(Q)_IOCEXIT")
 }
 
-record(aSub, "$(P)$(Q)_EXITIOC")
+record(aSub, "$(P)$(Q)_IOCEXIT")
 {
     field(SNAM, "iocExit")
 	field(FTA, "LONG")
-	field(INPA, "$(P)$(Q)EXITIOC")
+	field(INPA, "$(P)$(Q)IOCEXIT NPP")
 }
