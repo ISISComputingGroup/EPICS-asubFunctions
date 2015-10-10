@@ -1,6 +1,6 @@
 record(longout, "$(P)$(Q)IOCEXIT")
 {
-    field(DESC, "Exit IOC")
+    field(DESC, "Exit IOC $(IOCNAME=)")
     field(VAL, 0)
 	field(FLNK, "$(P)$(Q)_IOCEXIT")
 }
