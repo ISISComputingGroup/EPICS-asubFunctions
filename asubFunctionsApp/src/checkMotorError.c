@@ -22,7 +22,7 @@ static long checkMotorError(aSubRecord *prec)
 {
     char buffer[512];
     epicsUInt32 msta = *(epicsUInt32*)(prec->a); 
-    epicsInt16 lvio = *(epicsInt16*)(prec->b); 
+    epicsInt16 lvio = *(epicsInt16*)(prec->b); /* 1 = attempt to drive beyond HLM / LLM) */
     epicsInt16 hls = *(epicsInt16*)(prec->c); 
     epicsInt16 lls = *(epicsInt16*)(prec->d); 
     epicsEnum16 stat = *(epicsEnum16*)(prec->e); 
@@ -51,9 +51,17 @@ static long checkMotorError(aSubRecord *prec)
 	{
 	    strcat(buffer, "ERROR ");
 	}
-	if ( (lvio == 1) || (hls != 0) || (lls != 0) || (msta & (1 << 2)) || (msta & (1 << 13)) )
+	if ( /*(hls != 0) ||*/ (msta & (1 << 2)) ) /* need to allow for dir as positive and high may not be same thing */   
 	{
-	    strcat(buffer, "AT_LIMIT ");
+	    strcat(buffer, "AT_HW_LIMIT+ ");
+	}
+	if ( /*(lls != 0) ||*/ (msta & (1 << 13)) ) /* need to allow for dir as positive and high may not be same thing */
+	{
+	    strcat(buffer, "AT_HW_LIMIT- ");
+	}
+	if ( lvio == 1 )
+	{
+	    strcat(buffer, "SW_MOVE_LIMIT ");
 	}
 	if (strlen(buffer) > 0)
 	{
