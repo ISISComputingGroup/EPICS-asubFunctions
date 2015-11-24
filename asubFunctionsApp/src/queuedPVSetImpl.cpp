@@ -61,7 +61,7 @@ static void queuedPVThread(void* arg)
 //				}
 				if ( !callback_event.wait(item.timeout) )
 				{
-		            errlogPrintf("queuedPVThread %s set \"%s\" = \"%s\" WAIT TIMEOUT\n", item.recname, item.name, item.value);
+		            errlogPrintf("queuedPVThread %s set \"%s\" = \"%s\" WAIT TIMEOUT %f\n", item.recname, item.name, item.value, item.timeout);
 				}
 //				else
 //				{
