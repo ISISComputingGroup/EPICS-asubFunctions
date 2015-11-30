@@ -33,7 +33,7 @@ static long queuedPVSet(aSubRecord *prec)
     epicsUInt32 len_value_in = prec->neb;
     if (prec->fta != menuFtypeCHAR || prec->ftb != menuFtypeCHAR || prec->ftc != menuFtypeDOUBLE)
 	{
-         errlogPrintf("%s incorrect input type. A (CHAR), B (CHAR), C (DOUBLE)\n", prec->name);
+         errlogPrintf("%s incorrect input type for queuedPVSet. A (CHAR), B (CHAR), C (DOUBLE)\n", prec->name);
 		 return -1;
 	}
 	return queuedPVSetImpl(prec->name, pv_in, len_pv_in, max_len_pv_in, value_in, max_len_value_in, len_value_in, timeout);

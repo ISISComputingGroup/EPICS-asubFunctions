@@ -52,7 +52,7 @@ static void queuedPVThread(void* arg)
 //		        printf("queuedPVThread %s set \"%s\" = \"%s\" STARTING\n", item.recname, item.name, item.value);
                 if (var->putCallback(pvTypeCHAR, strlen(item.value), (pvValue*)item.value, queuedCallback, &item) != pvStatOK)
 				{
-		            errlogPrintf("queuedPVThread %s set \"%s\" = \"%s\" PUT ERROR\n", item.recname, item.name, item.value);
+		            errlogPrintf("queuedPVThread: %s set \"%s\" = \"%s\" PUT ERROR\n", item.recname, item.name, item.value);
 				}
 		        sys->pend(0.1, TRUE);
 //				while( !callback_event.tryWait() )
@@ -61,7 +61,7 @@ static void queuedPVThread(void* arg)
 //				}
 				if ( !callback_event.wait(item.timeout) )
 				{
-		            errlogPrintf("queuedPVThread %s set \"%s\" = \"%s\" WAIT TIMEOUT %f\n", item.recname, item.name, item.value, item.timeout);
+		            errlogPrintf("queuedPVThread: %s set \"%s\" = \"%s\" WAIT TIMEOUT after %f\n", item.recname, item.name, item.value, item.timeout);
 				}
 //				else
 //				{
@@ -71,7 +71,7 @@ static void queuedPVThread(void* arg)
 			}
 			catch(const std::exception& ex)
 			{
-                errlogPrintf("%s exception %s\n", item.recname, ex.what());
+                errlogPrintf("queuedPVThread: %s exception %s\n", item.recname, ex.what());
 			}
 //		    epicsThreadSleep(0.1);
 		}
@@ -84,17 +84,17 @@ int queuedPVSetImpl(const char* recname, const char* pv_in, epicsUInt32 len_pv_i
     PVItem item;
 	if (max_len_pv_in >= sizeof(item.name))
 	{
-        errlogPrintf("%s pv to set too long\n", recname);
+        errlogPrintf("queuedPVSet: %s pv to set too long\n", recname);
 	    return -1;
 	}
 	if (max_len_value_in >= sizeof(item.value))
 	{
-        errlogPrintf("%s pv value too long\n", recname);
+        errlogPrintf("queuedPVSet: %s pv value too long\n", recname);
 	    return -1;
 	}
 	if (pv_in == NULL || pv_in[0] == '\0' || len_pv_in == 0)
 	{
-        errlogPrintf("%s pv name is empty\n", recname);
+        errlogPrintf("queuedPVSet: %s pv name is empty\n", recname);
 	    return -1;
 	}
 	memset(&item, 0, sizeof(item));
@@ -114,7 +114,7 @@ int queuedPVSetImpl(const char* recname, const char* pv_in, epicsUInt32 len_pv_i
                           epicsThreadGetStackSize(epicsThreadStackMedium),
                           (EPICSTHREADFUNC)queuedPVThread, NULL) == 0)
             {
-                errlogPrintf("%s unable to start thread for queuedPVThread\n", recname);
+                errlogPrintf("queuedPVSet: %s unable to start thread for queuedPVThread\n", recname);
                 return -1;
             }
         }			
