@@ -26,7 +26,9 @@ static epicsMutex the_lock;
 
 static bool first_call = true;
 
-static epicsMessageQueue the_queue(30, sizeof(PVItem));
+#define MESSAGE_QUEUE_SIZE 30
+
+static epicsMessageQueue the_queue(MESSAGE_QUEUE_SIZE, sizeof(PVItem));
 
 static epicsEvent callback_event;
 
@@ -103,6 +105,10 @@ int queuedPVSetImpl(const char* recname, const char* pv_in, epicsUInt32 len_pv_i
 	strncpy(item.value, value_in, std::min(len_value_in, max_len_value_in));
 	item.timeout = timeout;
 	int stat = the_queue.trySend(&item, sizeof(item));
+	if (stat == -1)
+	{
+        errlogPrintf("queuedPVSet: %s unable to queue message\n", recname);
+	}
 	if (first_call)
 	{
 		epicsGuard<epicsMutex> _lock(the_lock);
