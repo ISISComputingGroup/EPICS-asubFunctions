@@ -19,7 +19,7 @@ DBD += asubFunctions.dbd
 asubFunctions_SRCS += charToStringWaveform.c stringConcatWithCtrlB.c setFunctions.c setFunctionsImpl.cpp 
 asubFunctions_SRCS += splitCharWaveform.c displayMotorMSTA.c splitToStringWaveform.c
 asubFunctions_SRCS += genData.c incrementor.c copyArgA.c iocExit.c checkMotorError.c
-asubFunctions_SRCS += queuedPVSet.c queuedPVSetImpl.cpp
+asubFunctions_SRCS += queuedPVSet.c queuedPVSetImpl.cpp copyArgs.c
 
 asubFunctions_LIBS += pv $(EPICS_BASE_IOC_LIBS)
 
