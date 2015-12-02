@@ -1,3 +1,10 @@
+/** @file queuedPVSetImpl.h
+ *  @author Freddie Akeroyd, STFC (freddie.akeroyd@stfc.ac.uk)
+ *  @ingroup asub_functions
+ *
+ *
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
