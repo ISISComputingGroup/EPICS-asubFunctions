@@ -11,7 +11,7 @@
 #include <map>
 #include <string>
 #include <registryFunction.h>
-#include <aSubRecord.h>
+#include <epicsTypes.h>
 #include <menuFtype.h>
 #include <errlog.h>
 #include <epicsMutex.h>
