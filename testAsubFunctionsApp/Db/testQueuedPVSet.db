@@ -1,17 +1,13 @@
-#
-# write a char array with   CAPUT -S WFCHAR "value"
-# then read it back with    CAGET WFSTRING
-#
-# epics fixed string size is 40 chars, hence 400 and 10 below
-# however the routine will safely truncate if there is a mismatch
-#
-record(waveform, "$(P)PVNAME") 
+# write to PVVALUE, should get queued and sent to PVTOSET
+
+record(waveform, "$(P)PVVALUE") 
 {
   field(FTVL, "CHAR") 
   field(NELM, "200")
+  field(FLNK, "$(P)QPVSET.PROC")
 }
 
-record(waveform, "$(P)PVVALUE") 
+record(waveform, "$(P)PVTOSET") 
 {
   field(FTVL, "CHAR") 
   field(NELM, "200")
@@ -20,19 +16,24 @@ record(waveform, "$(P)PVVALUE")
 record(aSub, "$(P)QPVSET")
 {
   field(SNAM, "queuedPVSet")
-  field(INPA, "$(P)PVNAME")
+  field(INPA, "$(P)_PVNAME NPP")
   field(FTA, "CHAR")
   field(NOA, "200")
-  field(INPB, "$(P)PVVALUE")
+  field(INPB, "$(P)PVVALUE NPP")
   field(FTB, "CHAR")
   field(NOB, "200")
   field(INPC, "5")
-  field(FTC, "LONG")
+  field(FTC, "DOUBLE")
   field(NOC, "1")
 } 
 
-record(waveform, "$(P)PVTOSET") 
+# add $ to PV.NAME to trigger long string support, which gives array of char needed for waveform
+# we can use PINI here as target PV is in same IOC, but if it was in a different IOC we would 
+# need to use e.g. a PP link in QPVSET INPA or some other linking to get _PVNAME to process
+record(waveform, "$(P)_PVNAME") 
 {
   field(FTVL, "CHAR") 
   field(NELM, "200")
+  field(INP, "$(P)PVTOSET.NAME$")
+  field(PINI, "YES")
 }
