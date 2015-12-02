@@ -1,0 +1,38 @@
+#
+# write a char array with   CAPUT -S WFCHAR "value"
+# then read it back with    CAGET WFSTRING
+#
+# epics fixed string size is 40 chars, hence 400 and 10 below
+# however the routine will safely truncate if there is a mismatch
+#
+record(waveform, "$(P)PVNAME") 
+{
+  field(FTVL, "CHAR") 
+  field(NELM, "200")
+}
+
+record(waveform, "$(P)PVVALUE") 
+{
+  field(FTVL, "CHAR") 
+  field(NELM, "200")
+}
+
+record(aSub, "$(P)QPVSET")
+{
+  field(SNAM, "queuedPVSet")
+  field(INPA, "$(P)PVNAME")
+  field(FTA, "CHAR")
+  field(NOA, "200")
+  field(INPB, "$(P)PVVALUE")
+  field(FTB, "CHAR")
+  field(NOB, "200")
+  field(INPC, "5")
+  field(FTC, "LONG")
+  field(NOC, "1")
+} 
+
+record(waveform, "$(P)PVTOSET") 
+{
+  field(FTVL, "CHAR") 
+  field(NELM, "200")
+}
