@@ -22,6 +22,7 @@
  */
 static long charToStringWaveform(aSubRecord *prec) 
 {
+    int i;
 	const char* str_in = (const char*)(prec->a); /* waveform CHAR data */
     epicsUInt32 len_in = *(epicsUInt32*)(prec->b); /* usually NORD from waveform */
     epicsOldString* str_out = (epicsOldString*)prec->vala; /* epicsOldString is typedef for epics fixed length string */ 
@@ -46,8 +47,14 @@ static long charToStringWaveform(aSubRecord *prec)
 	{
 		len_out = 1 + (len_in - 1) / sizeof(epicsOldString);
 	}
-	memset((char*)str_out + len_in, ' ', len_out * sizeof(epicsOldString) - len_in); /* space pad rest of last string written to */
-	/* memset((char*)str_out + len_in, ' ', max_out_bytes - len_in); /* space pad all unused parts */
+	/* memset((char*)str_out + len_in, '\0', len_out * sizeof(epicsOldString) - len_in); /* NULL pad rest of last string written to */
+	memset((char*)str_out + len_in, '\0', max_out_bytes - len_in); /* NULL pad all unused parts */
+#if 0
+	for(i=0; i<len_out; ++i)
+	{
+	    str_out[i][sizeof(epicsOldString)-1] = '\0'; /* ensure each individual string is NULL terminated */
+	}
+#endif
 	prec->neva = len_out;
     return 0; /* process output links */
 }
