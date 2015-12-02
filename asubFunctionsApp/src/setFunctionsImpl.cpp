@@ -74,12 +74,12 @@ int	getSetItemsImpl(const char* set_name, char* set_values, int max_len, int* le
 		    --i;   // remove trailing final ' ' added above
 		}
 	    memset(set_values + i, '\0', max_len - i); // or space pad?
-	    *len = i;
+	    *len = i + 1; // +1 to make sure '\0' is included
 	}
 	else
 	{
 	    set_values[max_len-1] = '\0';
-		*len = max_len-1;
+		*len = max_len;
 	}
 	*item_count = the_set.size();
 	return 0;

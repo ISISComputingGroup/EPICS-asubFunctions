@@ -22,7 +22,7 @@
  */
 static long copyArgA(aSubRecord *prec) 
 {
-    unsigned i;
+    unsigned n;
 	const char* str_in = (const char*)(prec->a); /* waveform CHAR data */
 	char* str_out = (char*)(prec->vala); /* waveform CHAR data */
     if (prec->fta != menuFtypeCHAR || prec->fta != prec->ftva)
@@ -30,15 +30,12 @@ static long copyArgA(aSubRecord *prec)
          errlogPrintf("%s incorrect input type. ", prec->name);
 		 return -1;
 	}
-    for(i=0; i<prec->noa && i<prec->nova; ++i)
+	memset(str_out, '\0', prec->nova); /* pad with NULL */
+    for(n=0; n<prec->noa && n<prec->nova; ++n)
     {
-        str_out[i] = str_in[i];
+        str_out[n] = str_in[n];
     }
-    if (i < prec->nova)
-    {
-        str_out[i] = '\0';
-    }
-    prec->neva = i;
+    prec->neva = (prec->nea < n ? prec->nea : n);
     return 0; /* process output links */
 }
 
