@@ -1,10 +1,8 @@
 #
-# write a char array with   CAPUT -S WFCHAR "value"
-# then read it back with    CAGET WFSTRING
+# write a char array with   CAPUT -S WFSPLITCHAR "value1;value2"
+# then read it back with    CAGET WFCSPLIT.VALA
 #
-# epics fixed string size is 40 chars, hence 400 and 10 below
-# however the routine will safely truncate if there is a mismatch
-#
+
 record(waveform, "$(P)WFSPLITCHAR") 
 {
   field(FTVL, "CHAR") 
@@ -17,16 +15,20 @@ record(stringin, "$(P)WFSPLITSEP")
   field(VAL, ";")
 }
 
+# INPC is the mode, 1=split of separator in INPD, 2=split on length in INPE (not used below)
 record(aSub, "$(P)WFCSPLIT")
 {
   field(SNAM, "splitCharWaveform")
   field(INPA, "$(P)WFSPLITCHAR")
   field(FTA, "CHAR")
   field(NOA, "400")
-  field(INPB, "$(P)WFCHAR.NORD")
+  field(INPB, "$(P)WFSPLITCHAR.NORD")
   field(FTB, "ULONG")
-  field(INPC, "$(P)WFSPLITSEP")
-  field(FTC, "STRING")
+  field(INPC, "1")
+  field(FTC, "ULONG")
+  field(INPD, "$(P)WFSPLITSEP")
+  field(FTD, "STRING")
+  field(FTE, "ULONG")
   field(FTVA, "STRING")
   field(FTVB, "STRING")
   field(FTVC, "STRING")
