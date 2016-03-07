@@ -36,11 +36,11 @@ static long displayMotorMSTA(aSubRecord *prec)
 	strcat(buffer, ((msta & 0x8) ? "HOMELS, " : "") );
 	strcat(buffer, ((msta & 0x4) ? "PLUS_LS, " : "") );
 	strcat(buffer, ((msta & 0x80) ? "AT_HOME, " : "") );
-	strcat(buffer, ((msta & 0x1) ? "DIR: POS, " : "DIR: NEG, ") );
-/*	strcat(buffer, ((msta & 0x10) ? "DONE: YES" : "DONE: NO") ); not used*/
-	strcat(buffer, ((msta & 0x100) ? "ENCODER: YES, " : "ENCODER: NO, ") );
-	strcat(buffer, ((msta & 0x4000) ? "HOMED: YES" : "HOMED: NO") );
 	strcat(buffer, ((msta & 0x800) ? "GAIN_SUPPORT, " : "") );
+	strcat(buffer, ((msta & 0x1) ? "DIR: POS, " : "DIR: NEG, ") );
+/*	strcat(buffer, ((msta & 0x10) ? "DONE: YES, " : "DONE: NO, ") ); not used*/
+	strcat(buffer, ((msta & 0x100) ? "ENCODER: YES, " : "ENCODER: NO, ") );
+	strcat(buffer, ((msta & 0x4000) ? "HOMED: YES, " : "HOMED: NO, ") );
 	strcat(buffer, ((msta & 0x20) ? "POS: closed_loop, " : "") );
 	n = strlen(buffer);
 	strncpy(msta_display, buffer, max_len);
