@@ -30,12 +30,12 @@ static long copyArgA(aSubRecord *prec)
          errlogPrintf("%s incorrect input type. ", prec->name);
 		 return -1;
 	}
+    
 	memset(str_out, '\0', prec->nova); /* pad with NULL */
-    for(n=0; n<prec->noa && n<prec->nova; ++n)
+    for(n=0; n<prec->noa && n<prec->nea; ++n)
     {
         str_out[n] = str_in[n];
     }
-    prec->neva = (prec->nea < n ? prec->nea : n);
     return 0; /* process output links */
 }
 
