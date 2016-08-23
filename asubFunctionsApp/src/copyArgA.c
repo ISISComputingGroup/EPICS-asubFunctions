@@ -32,10 +32,11 @@ static long copyArgA(aSubRecord *prec)
 	}
     
 	memset(str_out, '\0', prec->nova); /* pad with NULL */
-    for(n=0; n<prec->noa && n<prec->nea; ++n)
+    for(n=0; n<prec->nea && n<prec->noa && n<prec->nova; ++n)
     {
         str_out[n] = str_in[n];
     }
+    prec->neva = (n+1 < prec->nova ? n+1 : prec->nova);
     return 0; /* process output links */
 }
 
