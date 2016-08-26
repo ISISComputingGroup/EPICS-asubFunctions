@@ -1,12 +1,8 @@
 /** @file copyArgA.c
- *  @author Freddie Akeroyd, STFC (freddie.akeroyd@stfc.ac.uk)
  *  @ingroup asub_functions
  *
- *  Copy a CHAR waveform record into a STRING waveform record. If this is done by
- *  a normal CAPUT the character byte codes are not preserved
- *
  *  It expect the A input to be the waveform data and B to be "NORD" (number of elements)
- *  it write its output to VALA
+ *  it set the output length to be one more than the input to ensure NULL termination on copy
  */
 #include <string.h>
 #include <registryFunction.h>
@@ -16,7 +12,7 @@
 
 #include <epicsExport.h>
 /**
- *  Convert a character waveform into a string waveform
+ *  Copy a character waveform
  *  @ingroup asub_functions
  *  @param[in] prec Pointer to aSub record
  */
@@ -27,16 +23,15 @@ static long copyArgA(aSubRecord *prec)
 	char* str_out = (char*)(prec->vala); /* waveform CHAR data */
     if (prec->fta != menuFtypeCHAR || prec->fta != prec->ftva)
 	{
-         errlogPrintf("%s incorrect input type. ", prec->name);
+         errlogPrintf("%s incorrect input type - must be CHAR. ", prec->name);
 		 return -1;
 	}
-    
-	memset(str_out, '\0', prec->nova); /* pad with NULL */
+	memset(str_out, '\0', prec->nova); /* initialise output with NULL */
     for(n=0; n<prec->nea && n<prec->noa && n<prec->nova; ++n)
     {
         str_out[n] = str_in[n];
     }
-    prec->neva = (n+1 < prec->nova ? n+1 : prec->nova);
+    prec->neva = (n+1 < prec->nova ? n+1 : prec->nova); /* +1 ensures a NULL terminator is copied to the next record */
     return 0; /* process output links */
 }
 
