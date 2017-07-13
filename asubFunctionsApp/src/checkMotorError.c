@@ -49,19 +49,19 @@ static long checkMotorError(aSubRecord *prec)
 #endif
 	if ( (msta & (1 << 6)) || (msta & (1 << 9)) || (msta & (1 << 12)) )
 	{
-	    strcat(buffer, "ERROR ");
+	    strcat(buffer, "MTR_ERR ");
 	}
 	if ( /*(hls != 0) ||*/ (msta & (1 << 2)) ) /* need to allow for dir as positive and high may not be same thing */   
 	{
-	    strcat(buffer, "AT_HW_LIMIT+ ");
+	    strcat(buffer, "HW_LIM+ ");
 	}
 	if ( /*(lls != 0) ||*/ (msta & (1 << 13)) ) /* need to allow for dir as positive and high may not be same thing */
 	{
-	    strcat(buffer, "AT_HW_LIMIT- ");
+	    strcat(buffer, "HW_LIM- ");
 	}
 	if ( lvio == 1 )
 	{
-	    strcat(buffer, "SW_MOVE_LIMIT ");
+	    strcat(buffer, "SW_LIM ");
 	}
 	if (strlen(buffer) > 0)
 	{
