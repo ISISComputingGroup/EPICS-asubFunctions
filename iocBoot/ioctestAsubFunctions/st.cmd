@@ -15,7 +15,6 @@ testAsubFunctions_registerRecordDeviceDriver pdbbase
 dbLoadRecords("db/testCharToStringWaveform.db","P=$(MYPVPREFIX)")
 dbLoadRecords("db/testSplitCharWaveform.db","P=$(MYPVPREFIX)")
 dbLoadRecords("db/testGenData.db","P=$(MYPVPREFIX)")
-dbLoadRecords("db/testQueuedPVSet.db","P=$(MYPVPREFIX)")
 
 cd ${TOP}/iocBoot/${IOC}
 iocInit
