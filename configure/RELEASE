@@ -1,5 +1,4 @@
 # build dependencies
-SNCSEQ=$(SUPPORT)/seq/master
 
 # optional extra local definitions here
 -include $(TOP)/configure/RELEASE.private

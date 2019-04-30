@@ -32,7 +32,7 @@ testAsubFunctions_SRCS_vxWorks += -nil-
 #testAsubFunctions_OBJS_vxWorks += $(EPICS_BASE_BIN)/vxComLibrary
 
 # Finally link to the EPICS Base libraries
-testAsubFunctions_LIBS += pv $(EPICS_BASE_IOC_LIBS)
+testAsubFunctions_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 #===========================
 
