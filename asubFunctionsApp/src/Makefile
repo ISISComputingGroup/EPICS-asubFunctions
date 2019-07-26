@@ -15,13 +15,16 @@ LIBRARY_IOC += asubFunctions
 # install asubFunctions.dbd into <top>/dbd
 DBD += asubFunctions.dbd
 
+include $(GSL)/gsl_flags.mak
+
 # specify all source files to be compiled and added to the library
 asubFunctions_SRCS += charToStringWaveform.c stringConcatWithCtrlB.c setFunctions.c setFunctionsImpl.cpp 
 asubFunctions_SRCS += splitCharWaveform.c displayMotorMSTA.c splitToStringWaveform.c
 asubFunctions_SRCS += genData.c incrementor.c copyArgA.c iocExit.c checkMotorError.c
-asubFunctions_SRCS += copyArgs.c
+asubFunctions_SRCS += copyArgs.c line_of_best_fit.c
 
 asubFunctions_LIBS += $(EPICS_BASE_IOC_LIBS)
+asubFunctions_LIBS += gsl
 
 #===========================
 
