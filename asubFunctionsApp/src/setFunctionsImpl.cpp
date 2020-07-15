@@ -48,19 +48,28 @@ int	getSetItemCountImpl(const char* set_name, int* item_count)
 {
     epicsGuard<epicsMutex> _lock(set_lock);
     const std::set<std::string>& the_set = the_sets[set_name];
-	*item_count = the_set.size();
+	*item_count = static_cast<int>(the_set.size());
 	return 0;
 }
 
-int	getSetItemsImpl(const char* set_name, char* set_values, int max_len, int* len, int* item_count)
+int	getSetItemsImpl(const char* set_name, const char* strip_prefix, char* set_values, int max_len, int* len, int* item_count)
 {
     epicsGuard<epicsMutex> _lock(set_lock);
     const std::set<std::string>& the_set = the_sets[set_name];
 	int i = 0;
+    size_t nstrip = strlen(strip_prefix);
     for(std::set<std::string>::const_iterator it = the_set.begin(); i < max_len && it != the_set.end(); ++it)
 	{
-	    strncpy(set_values + i, it->c_str(), max_len - i);
-		i += it->size();
+        if (!strncmp(it->c_str(), strip_prefix, nstrip))
+        {            
+	        strncpy(set_values + i, it->c_str() + nstrip, max_len - i);
+		    i += static_cast<int>(it->size() - nstrip);
+        }
+        else
+        {
+	        strncpy(set_values + i, it->c_str(), max_len - i);
+		    i += it->size();
+        }
 		if (i < max_len)
 		{
 		    set_values[i] = ' ';
