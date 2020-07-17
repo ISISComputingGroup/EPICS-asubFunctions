@@ -72,13 +72,14 @@ static long getSetItems(aSubRecord *prec)
 {
     int item_count = 0;
     epicsOldString* set_name = (epicsOldString*)prec->a; /* epicsOldString is typedef for epics fixed length string */ 
+    epicsOldString* strip_prefix = (epicsOldString*)prec->b; /* epicsOldString is typedef for epics fixed length string */ 
 	char* item_value = (char*)(prec->vala); /* waveform CHAR data */
-    if (prec->fta != menuFtypeSTRING || prec->ftva != menuFtypeCHAR || prec->ftvb != menuFtypeULONG)
+    if (prec->fta != menuFtypeSTRING || prec->ftb != menuFtypeSTRING || prec->ftva != menuFtypeCHAR || prec->ftvb != menuFtypeULONG)
 	{
-         errlogPrintf("%s incorrect input type. A (STRING), VALA (CHAR), VALB (ULONG)", prec->name);
+         errlogPrintf("%s incorrect input type. A (STRING), B (STRING), VALA (CHAR), VALB (ULONG)", prec->name);
 		 return -1;
 	}
-	getSetItemsImpl(*set_name, item_value, prec->nova, &(prec->neva), &item_count);
+	getSetItemsImpl(*set_name, *strip_prefix, item_value, prec->nova, &(prec->neva), &item_count);
     *(epicsUInt32*)prec->valb = item_count;
     prec->nevb = 1;
     return 0; /* process output links */
