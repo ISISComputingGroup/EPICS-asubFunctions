@@ -123,6 +123,30 @@ namespace {
         ASSERT_STRCASEEQ(valcResult[0], "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
     }
 
+    TEST(SplitCharWaveformTest, ignores_incorrect_fte_type_in_mode_1) {
+        // Given
+        aSubRecord prec;
+        memset(&prec, 0, sizeof(prec));
+        setupASubRecord(&prec);
+        prec.fte = menuFtypeDOUBLE;
+        prec.c = &nov;
+
+        // When:
+        long status = splitCharWaveform(&prec);
+
+        epicsOldString* valaResult = (epicsOldString*)(prec.vala);
+        epicsOldString* valbResult = (epicsOldString*)(prec.valb);
+        epicsOldString* valcResult = (epicsOldString*)(prec.valc);
+        epicsUInt32 valuResult = *(epicsUInt32*)(prec.valu);
+
+        // Then:
+        ASSERT_EQ(status, 0);
+        ASSERT_EQ(valuResult, 2);
+        ASSERT_STRCASEEQ(valaResult[0], "word");
+        ASSERT_STRCASEEQ(valbResult[0], "word");
+        ASSERT_STRCASEEQ(valcResult[0], "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+    }
+
     TEST(SplitCharWaveformTest, rejects_incorrect_fta_type) {
         // Given
         aSubRecord prec;
@@ -178,7 +202,8 @@ namespace {
         // Then:
         ASSERT_EQ(status, -1);
     }
-    TEST(SplitCharWaveformTest, rejects_incorrect_fte_type_in_mode_not_1) {
+
+    TEST(SplitCharWaveformTest, rejects_incorrect_fte_type_in_mode_2) {
         // Given
         aSubRecord prec;
         memset(&prec, 0, sizeof(prec));
@@ -190,21 +215,6 @@ namespace {
 
         // Then:
         ASSERT_EQ(status, -1);
-    }
-
-    TEST(SplitCharWaveformTest, ignores_incorrect_fte_type_in_mode_1) {
-        // Given
-        aSubRecord prec;
-        memset(&prec, 0, sizeof(prec));
-        setupASubRecord(&prec);
-        prec.fte = menuFtypeDOUBLE;
-        prec.c = &nov;
-
-        // When:
-        long status = splitCharWaveform(&prec);
-
-        // Then:
-        ASSERT_EQ(status, 0);
     }
 
     TEST(SplitCharWaveformTest, rejects_incorrect_ftvu_type) {
