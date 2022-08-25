@@ -11,78 +11,73 @@
 #include "gtest/gtest.h"
 
 namespace {
-    epicsUInt32 nov = 1;
-    int bVal = 9;
-    int cVal = 2;
-    int valuVal = 19;
-    int eVal = 5;
-    epicsEnum16 ftvVal = 0;
 
-    epicsOldString valaValue[1] = { "word_word" };
-    epicsOldString valbValue[1] = { "" };
-    epicsOldString valVals[1] = { "" };
-    epicsOldString resultA = "word";
-    epicsOldString resultB = "_word";
-    epicsOldString resultC = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+    class SplitCharWaveformTest : public ::testing::Test {
+    protected:
+        const int bVal = 9;
+        const int cVal = 2;
+        const int eVal = 5;
+        const epicsEnum16 ftvVal = 0;
 
-    static void setupASubRecord(aSubRecord* prec)
-    {
-        strcpy(prec->name, "name");
-        prec->fta = menuFtypeCHAR;
-        prec->ftb = menuFtypeULONG;
-        prec->ftc = menuFtypeULONG;
-        prec->ftd = menuFtypeSTRING;
-        prec->fte = menuFtypeULONG;
-        prec->ftvu = menuFtypeULONG;
-        prec->a = "word_word";
-        prec->b = &bVal;
-        prec->c = &cVal;
-        prec->d = "_";
-        prec->e = &eVal;
-        prec->noa = 14;
-        prec->vala = valaValue;
-        prec->valb = valbValue;
-        prec->valc = valVals;
-        prec->vald = valVals;
-        prec->vale = valVals;
-        prec->valf = valVals;
-        prec->valg = valVals;
-        prec->valh = valVals;
-        prec->vali = valVals;
-        prec->valj = valVals;
-        prec->valk = valVals;
-        prec->vall = valVals;
-        prec->valm = valVals;
-        prec->valn = valVals;
-        prec->valo = valVals;
-        prec->valp = valVals;
-        prec->valq = valVals;
-        prec->valr = valVals;
-        prec->vals = valVals;
-        prec->valt = valVals;
-        prec->valu = &valuVal;
-
-        for (int i = 0; i < 20; ++i)
-        {
-            ptrdiff_t step = &(prec->ftvb) - &(prec->ftva);
-            epicsEnum16* rec_val_ptr = &(prec->ftva) + i * step;
-            *rec_val_ptr = ftvVal;
-        }
-
-        for (int i = 0; i < 20; ++i)
-        {
-            ptrdiff_t step = &(prec->novb) - &(prec->nova);
-            epicsUInt32* rec_val_ptr = &(prec->nova) + i * step;
-            *rec_val_ptr = nov;
-        }
-    }
-
-    TEST(SplitCharWaveformTest, splits_wave_form_mode_2) {
-        // Given
         aSubRecord prec;
-        memset(&prec, 0, sizeof(prec));
-        setupASubRecord(&prec);
+        ptrdiff_t step;
+        int valuVal = 19;
+        epicsUInt32 nov = 1;
+        epicsOldString valaValue[1] = { "word_word" };
+        epicsOldString valbValue[1] = { "" };
+        epicsOldString valVals[1] = { "" };
 
+        void setupASubRecord()
+        {
+            strcpy(prec.name, "name");
+            prec.fta = menuFtypeCHAR;
+            prec.ftb = menuFtypeULONG;
+            prec.ftc = menuFtypeULONG;
+            prec.ftd = menuFtypeSTRING;
+            prec.fte = menuFtypeULONG;
+            prec.ftvu = menuFtypeULONG;
+            prec.a = "word_word";
+            prec.b = (void*)&bVal;
+            prec.c = (void*)&cVal;
+            prec.d = "_";
+            prec.e = (void*)&eVal;
+            prec.noa = 14;
+            prec.vala = valaValue;
+            prec.valb = valbValue;
+            prec.valu = &valuVal;
+
+            step = &(prec.ftvb) - &(prec.ftva);
+
+            for (int i = 0; i < 20; ++i)
+            {
+                epicsEnum16* rec_val_ptr = &(prec.ftva) + i * step;
+                *rec_val_ptr = ftvVal;
+            }
+
+            step = &(prec.novb) - &(prec.nova);
+
+            for (int i = 0; i < 20; ++i)
+            {
+                epicsUInt32* rec_val_ptr = &(prec.nova) + i * step;
+                *rec_val_ptr = nov;
+            }
+
+            step = &(prec.valb) - &(prec.vala);
+
+            for (int i = 2; i < 20; ++i)
+            {
+                void** rec_val_ptr = &(prec.vala) + i * step;
+                *rec_val_ptr = valVals;
+            }
+        }
+
+        void SetUp() override {
+            memset(&prec, 0, sizeof(prec));
+            setupASubRecord();
+        }
+    };
+
+    TEST_F(SplitCharWaveformTest, test_GIVEN_waveform_in_mode_2_WHEN_split_wave_form_THEN_split_on_str_len) {
         // When:
         long status = splitCharWaveform(&prec);
 
@@ -100,11 +95,8 @@ namespace {
     }
 
     
-    TEST(SplitCharWaveformTest, splits_wave_form_mode_1) {
+    TEST_F(SplitCharWaveformTest, test_GIVEN_waveform_in_mode_1_WHEN_split_wave_form_THEN_split_on_delim) {
         // Given
-        aSubRecord prec;
-        memset(&prec, 0, sizeof(prec));
-        setupASubRecord(&prec);
         prec.c = &nov;
 
         // When:
@@ -123,11 +115,8 @@ namespace {
         ASSERT_STRCASEEQ(valcResult[0], "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
     }
 
-    TEST(SplitCharWaveformTest, ignores_incorrect_fte_type_in_mode_1) {
+    TEST_F(SplitCharWaveformTest, test_GIVEN_waveform_in_mode_1_wrong_fte_type_WHEN_split_wave_form_THEN_split_on_delim) {
         // Given
-        aSubRecord prec;
-        memset(&prec, 0, sizeof(prec));
-        setupASubRecord(&prec);
         prec.fte = menuFtypeDOUBLE;
         prec.c = &nov;
 
@@ -147,11 +136,8 @@ namespace {
         ASSERT_STRCASEEQ(valcResult[0], "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
     }
 
-    TEST(SplitCharWaveformTest, rejects_incorrect_fta_type) {
+    TEST_F(SplitCharWaveformTest, test_GIVEN_incorrect_fta_type_WHEN_split_wave_form_THEN_error_status_is_returned) {
         // Given
-        aSubRecord prec;
-        memset(&prec, 0, sizeof(prec));
-        setupASubRecord(&prec);
         prec.fta = menuFtypeDOUBLE;
 
         // When:
@@ -161,11 +147,8 @@ namespace {
         ASSERT_EQ(status, -1);
     }
 
-    TEST(SplitCharWaveformTest, rejects_incorrect_ftb_type) {
+    TEST_F(SplitCharWaveformTest, test_GIVEN_incorrect_ftb_type_WHEN_split_wave_form_THEN_error_status_is_returned) {
         // Given
-        aSubRecord prec;
-        memset(&prec, 0, sizeof(prec));
-        setupASubRecord(&prec);
         prec.ftb = menuFtypeDOUBLE;
 
         // When:
@@ -175,11 +158,8 @@ namespace {
         ASSERT_EQ(status, -1);
     }
 
-    TEST(SplitCharWaveformTest, rejects_incorrect_ftc_type) {
+    TEST_F(SplitCharWaveformTest, test_GIVEN_incorrect_ftc_type_WHEN_split_wave_form_THEN_error_status_is_returned) {
         // Given
-        aSubRecord prec;
-        memset(&prec, 0, sizeof(prec));
-        setupASubRecord(&prec);
         prec.ftc = menuFtypeDOUBLE;
 
         // When:
@@ -189,11 +169,8 @@ namespace {
         ASSERT_EQ(status, -1);
     }
 
-    TEST(SplitCharWaveformTest, rejects_incorrect_ftd_type) {
+    TEST_F(SplitCharWaveformTest, test_GIVEN_incorrect_ftd_type_WHEN_split_wave_form_THEN_error_status_is_returned) {
         // Given
-        aSubRecord prec;
-        memset(&prec, 0, sizeof(prec));
-        setupASubRecord(&prec);
         prec.ftd = menuFtypeDOUBLE;
 
         // When:
@@ -203,11 +180,8 @@ namespace {
         ASSERT_EQ(status, -1);
     }
 
-    TEST(SplitCharWaveformTest, rejects_incorrect_fte_type_in_mode_2) {
+    TEST_F(SplitCharWaveformTest, test_GIVEN_incorrect_fte_type_in_mode_2_WHEN_split_wave_form_THEN_error_status_is_returned) {
         // Given
-        aSubRecord prec;
-        memset(&prec, 0, sizeof(prec));
-        setupASubRecord(&prec);
         prec.fte = menuFtypeDOUBLE;
 
         // When:
@@ -217,11 +191,8 @@ namespace {
         ASSERT_EQ(status, -1);
     }
 
-    TEST(SplitCharWaveformTest, rejects_incorrect_ftvu_type) {
+    TEST_F(SplitCharWaveformTest, test_GIVEN_incorrect_ftvu_type_WHEN_split_wave_form_THEN_error_status_is_returned) {
         // Given
-        aSubRecord prec;
-        memset(&prec, 0, sizeof(prec));
-        setupASubRecord(&prec);
         prec.ftvu = menuFtypeDOUBLE;
 
         // When:
@@ -231,11 +202,8 @@ namespace {
         ASSERT_EQ(status, -1);
     }
 
-    TEST(SplitCharWaveformTest, rejects_incorrect_ftv_type) {
+    TEST_F(SplitCharWaveformTest, test_GIVEN_incorrect_ftv_type_WHEN_split_wave_form_THEN_error_status_is_returned) {
         // Given
-        aSubRecord prec;
-        memset(&prec, 0, sizeof(prec));
-        setupASubRecord(&prec);
         prec.ftvb = menuFtypeDOUBLE;
 
         // When:
@@ -245,11 +213,8 @@ namespace {
         ASSERT_EQ(status, -1);
     }
 
-    TEST(SplitCharWaveformTest, rejects_incorrect_nov_size) {
+    TEST_F(SplitCharWaveformTest, test_GIVEN_incorrect_nov_size_WHEN_split_wave_form_THEN_error_status_is_returned) {
         // Given
-        aSubRecord prec;
-        memset(&prec, 0, sizeof(prec));
-        setupASubRecord(&prec);
         prec.novb = 0;
 
         // When:
