@@ -91,7 +91,7 @@ namespace {
         ASSERT_EQ(valuResult, 2);
         ASSERT_STRCASEEQ(valaResult[0], "word_");
         ASSERT_STRCASEEQ(valbResult[0], "word");
-        ASSERT_STRCASEEQ(valcResult[0], "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+        ASSERT_STRCASEEQ(valcResult[0], "");
     }
 
     
@@ -112,7 +112,7 @@ namespace {
         ASSERT_EQ(valuResult, 2);
         ASSERT_STRCASEEQ(valaResult[0], "word");
         ASSERT_STRCASEEQ(valbResult[0], "word");
-        ASSERT_STRCASEEQ(valcResult[0], "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+        ASSERT_STRCASEEQ(valcResult[0], "");
     }
 
     TEST_F(SplitCharWaveformTest, test_GIVEN_waveform_in_mode_1_wrong_fte_type_WHEN_split_wave_form_THEN_split_on_delim) {
@@ -133,7 +133,7 @@ namespace {
         ASSERT_EQ(valuResult, 2);
         ASSERT_STRCASEEQ(valaResult[0], "word");
         ASSERT_STRCASEEQ(valbResult[0], "word");
-        ASSERT_STRCASEEQ(valcResult[0], "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+        ASSERT_STRCASEEQ(valcResult[0], "");
     }
 
     TEST_F(SplitCharWaveformTest, test_GIVEN_incorrect_fta_type_WHEN_split_wave_form_THEN_error_status_is_returned) {
