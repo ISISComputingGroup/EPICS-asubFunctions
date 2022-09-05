@@ -36,10 +36,10 @@ namespace {
             prec.ftd = menuFtypeSTRING;
             prec.fte = menuFtypeULONG;
             prec.ftvu = menuFtypeULONG;
-            prec.a = "word_word";
+            prec.a = (void*)"word_word";
             prec.b = (void*)&bVal;
             prec.c = (void*)&cVal;
-            prec.d = "_";
+            prec.d = (void*)"_";
             prec.e = (void*)&eVal;
             prec.noa = 14;
             prec.vala = valaValue;
