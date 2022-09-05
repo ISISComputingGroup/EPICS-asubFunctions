@@ -23,9 +23,20 @@ asubFunctions_SRCS += copyArgs.c
 
 asubFunctions_LIBS += $(EPICS_BASE_IOC_LIBS)
 
+# googleTest Runner
+ifeq ($(findstring 10.0,$(VCVERSION)),)
+SRC_DIRS += $(TOP)/asubFunctionsApp/tests
+
+GTESTPROD_HOST += runner
+runner_SRCS += splitCharWaveform_tests.cc
+runner_SRCS += splitCharWaveform.c
+runner_LIBS += $(EPICS_BASE_IOC_LIBS)
+GTESTS += runner 
+endif
+
 #===========================
 
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
-
+-include $(GTEST)/cfg/compat.RULES_BUILD

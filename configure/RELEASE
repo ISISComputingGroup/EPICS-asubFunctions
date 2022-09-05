@@ -1,4 +1,5 @@
 # build dependencies
+GTEST=$(SUPPORT)/googletest/master
 
 # optional extra local definitions here
 -include $(TOP)/configure/RELEASE.private
