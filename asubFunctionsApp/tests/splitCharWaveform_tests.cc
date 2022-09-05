@@ -7,7 +7,7 @@
 #include <epicsString.h>
 
 #include "epicsThread.h"
-#include "splitCharWaveForm.c"
+#include "splitCharWaveform.c"
 #include "gtest/gtest.h"
 
 namespace {
