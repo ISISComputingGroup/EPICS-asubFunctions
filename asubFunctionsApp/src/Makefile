@@ -29,7 +29,6 @@ SRC_DIRS += $(TOP)/asubFunctionsApp/tests
 
 GTESTPROD_HOST += runner
 runner_SRCS += splitCharWaveform_tests.cc
-runner_SRCS += splitCharWaveform.c
 runner_LIBS += $(EPICS_BASE_IOC_LIBS)
 GTESTS += runner 
 endif
