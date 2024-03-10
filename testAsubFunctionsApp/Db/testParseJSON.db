@@ -1,0 +1,63 @@
+record(waveform, "$(P)JSON_INPUT") 
+{
+  field(FTVL, "CHAR")
+  field(NELM, "400")
+  field(FLNK, "$(P)PARSEJSON")
+}
+
+record(waveform, "$(P)JSON_PATH1") 
+{
+  field(FTVL, "CHAR") 
+  field(NELM, "400")
+  field(FLNK, "$(P)PARSEJSON")
+}
+
+record(lsi, "$(P)JSON_PATH2")
+{
+  field(SIZV, "400")
+  field(INP, {const:"/a"})
+  field(FLNK, "$(P)PARSEJSON")
+}
+
+record(stringin, "$(P)JSON_PATH3")
+{
+  field(VAL, "/b")
+  field(FLNK, "$(P)PARSEJSON")
+}
+
+record(stringin, "$(P)JSON_PATH4")
+{
+  field(VAL, "/c")
+  field(FLNK, "$(P)PARSEJSON")
+}
+
+record(aSub, "$(P)PARSEJSON")
+{
+  field(SNAM, "parseJSON")
+  field(INPA, "$(P)JSON_INPUT")
+  field(FTA, "CHAR")
+  field(NOA, "400")
+  field(FTVA, "ULONG")
+
+  field(INPB, "$(P)JSON_PATH1")
+  field(FTB, "CHAR")
+  field(NOB, "400")
+  field(NOVB, "400")
+  field(FTVB, "CHAR")
+
+  field(INPC, "$(P)JSON_PATH2.VAL$")
+  field(FTC, "CHAR")
+  field(NOC, "400")
+  field(NOVC, "400")
+  field(FTVC, "CHAR")
+
+  field(INPD, "$(P)JSON_PATH3")
+  field(FTD, "STRING")
+  field(FTVD, "STRING")
+
+  field(INPE, "$(P)JSON_PATH4")
+  field(FTE, "STRING")
+  field(FTVE, "DOUBLE")
+  field(NOVE, "10")
+
+} 

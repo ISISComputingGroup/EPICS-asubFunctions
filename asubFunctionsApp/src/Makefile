@@ -9,6 +9,8 @@ include $(TOP)/configure/CONFIG
 # build a support library
 
 LIBRARY_IOC += asubFunctions
+USR_INCLUDES += -I"$(TOP)/../../../libraries/master/jsonformoderncpp" -I"$(TOP)/../../../libraries/master/boost/include"
+USR_CXXFLAGS_WIN32 += -DNOMINMAX
 
 # xxxRecord.h will be created from xxxRecord.dbd
 #DBDINC += xxxRecord
@@ -19,7 +21,7 @@ DBD += asubFunctions.dbd
 asubFunctions_SRCS += charToStringWaveform.c stringConcatWithCtrlB.c setFunctions.c setFunctionsImpl.cpp 
 asubFunctions_SRCS += splitCharWaveform.c displayMotorMSTA.c splitToStringWaveform.c
 asubFunctions_SRCS += genData.c incrementor.c copyArgA.c iocExit.c checkMotorError.c
-asubFunctions_SRCS += copyArgs.c
+asubFunctions_SRCS += copyArgs.c parseJSON.cpp
 
 asubFunctions_LIBS += $(EPICS_BASE_IOC_LIBS)
 
@@ -28,7 +30,8 @@ ifeq ($(findstring 10.0,$(VCVERSION)),)
 SRC_DIRS += $(TOP)/asubFunctionsApp/tests
 
 GTESTPROD_HOST += runner
-runner_SRCS += splitCharWaveform_tests.cc
+runner_SRCS += splitCharWaveform_tests.cc parseJSON_tests.cpp
+runner_LIBS += asubFunctions
 runner_LIBS += $(EPICS_BASE_IOC_LIBS)
 GTESTS += runner 
 endif
