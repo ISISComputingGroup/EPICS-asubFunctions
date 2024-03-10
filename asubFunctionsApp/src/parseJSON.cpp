@@ -1,8 +1,8 @@
+//
 // @file parseJSON.cpp
-//  @author Freddie Akeroyd, STFC (freddie.akeroyd@stfc.ac.uk)
-//  @ingroup asub_functions
+// @ingroup asub_functions
 //
-//
+
 #include <cstring>
 #include <cstdlib>
 #include <iostream>
@@ -22,67 +22,136 @@ using json = nlohmann::json;
 
 #include <parseJSON.h>
 
+template <typename T>
+static T* getASubFieldPtr(T* field_a, T* field_b, int i)
+{
+    ptrdiff_t step = field_b - field_a; // assumes fields A and B are consecutive in structure
+	return field_a + i * step;
+}
+
 /** 
  * get reference to VALA etc. output fields via index. Assumes VALA, VALB etc. are packed sequentially in structure and 
  * of same data type size so can move pointer by fixed amount. Index 0 -> 'VALA' etc.
  */
-static epicsOldString* getVal(aSubRecord *prec, int i)
+static void* getASubVAL(aSubRecord *prec, int i)
 {
-    ptrdiff_t step = &(prec->valb) - &(prec->vala);  /* allow for structure padding */
-	void** rec_val_ptr = &(prec->vala) + i * step; /* pointer to field in strtucture */
-	return (epicsOldString*)(*rec_val_ptr); /* epicsOldString is typedef for epics fixed length string */ 
+    return *(getASubFieldPtr<void*>(&(prec->vala), &(prec->valb), i));
+}
+
+static void* getASubInput(aSubRecord *prec, int i)
+{
+    return *(getASubFieldPtr<void*>(&(prec->a), &(prec->b), i));
+}
+
+static epicsUInt32 getASubNO(aSubRecord *prec, int i)
+{
+    return *(getASubFieldPtr<epicsUInt32>(&(prec->noa), &(prec->nob), i));
+}
+
+static epicsUInt32 getASubNE(aSubRecord *prec, int i)
+{
+    return *(getASubFieldPtr<epicsUInt32>(&(prec->nea), &(prec->neb), i));
 }
 
 /** get NOVA etc. fields via index. Assumes NOVA, NOVB are consecutive types */
-static epicsUInt32 getNov(aSubRecord *prec, int i)
+static epicsUInt32 getASubNOV(aSubRecord *prec, int i)
 {
-    ptrdiff_t step = &(prec->novb) - &(prec->nova);  /* allow for structure padding */
-	epicsUInt32* rec_val_ptr = &(prec->nova) + i * step;
-	return *rec_val_ptr;
+    return *(getASubFieldPtr<epicsUInt32>(&(prec->nova), &(prec->novb), i));
 }
 
 /** get NEVA etc. fields via index */
-static epicsUInt32* getNev(aSubRecord *prec, int i)
+static epicsUInt32& getASubNEV(aSubRecord *prec, int i)
 {
-    ptrdiff_t step = &(prec->nevb) - &(prec->neva);  /* allow for structure padding */
-	epicsUInt32* rec_val_ptr = &(prec->neva) + i * step;
-	return rec_val_ptr;
+    return *(getASubFieldPtr<epicsUInt32>(&(prec->neva), &(prec->nevb), i));
 }
 
 /** get FTVA etc. fields via index */
-static epicsEnum16 getFtv(aSubRecord *prec, int i)
+static epicsEnum16 getASubFTV(aSubRecord *prec, int i)
 {
-    ptrdiff_t step = &(prec->ftvb) - &(prec->ftva);  /* allow for structure padding */
-	epicsEnum16* rec_val_ptr = &(prec->ftva) + i * step;
-	return *rec_val_ptr; 
+    return *(getASubFieldPtr<epicsEnum16>(&(prec->ftva), &(prec->ftvb), i));
 }
 
+static epicsEnum16 getASubFT(aSubRecord *prec, int i)
+{
+    return *(getASubFieldPtr<epicsEnum16>(&(prec->fta), &(prec->ftb), i));
+}
+
+// return blank string iof invalid type so we skip it
+std::string getASubStringInput(aSubRecord *prec, int i) {
+    epicsEnum16 ftv = getASubFT(prec, i);
+    if (ftv == menuFtypeCHAR || ftv == menuFtypeUCHAR) {        
+        return (const char*)getASubInput(prec, i);
+    } else if (ftv == menuFtypeSTRING && getASubNO(prec, i) == 1) {
+        return (const char*)getASubInput(prec, i);
+    } else {
+        return "";
+    }        
+}
+
+// recursively walk path_bits to get value of interest
 static json getJSONValueRecurse(const json& j, const std::vector<std::string>& path_bits, int level)
 {
     if (level < path_bits.size()) {
+        const std::string& key = path_bits[level];
         if (j.is_array()) {
-            return getJSONValueRecurse(j[atoi(path_bits[level].c_str())], path_bits, level + 1);
-        } else {
-            return getJSONValueRecurse(j[path_bits[level]], path_bits, level + 1);
+            char* endptr = NULL;
+            long index = strtol(key.c_str(), &endptr, 10);
+            if ( endptr != NULL && (endptr - key.c_str()) == key.size() &&
+                 index >= 0 && index < j.size() ) {             
+                return getJSONValueRecurse(j.at(index), path_bits, level + 1);
+            } else {
+                throw std::runtime_error("array index " + std::to_string(index) + " is either out of range or not a valid integer");
+            }
+        } else if (j.contains(key)) {
+            return getJSONValueRecurse(j.at(key), path_bits, level + 1);
+        }
+        else {
+            throw std::runtime_error("cannot find key " + key + " at level " + std::to_string(level));
         }
     } else {
         return j;
     }
 }
 
+// extract value at location specified by path from json
 json getJSONValue(const json& j, const std::string& path)
 {
 	std::vector<std::string> path_bits;
 	boost::algorithm::split(path_bits, path, boost::is_any_of("/"), boost::token_compress_on);
+    // remove any blank path elements, usually from initial or final / in path 
     auto r = std::remove(path_bits.begin(), path_bits.end(), "");
-    path_bits.erase(r, path_bits.end());     
+    path_bits.erase(r, path_bits.end());
 	return getJSONValueRecurse(j, path_bits, 0);
 }
 
+// extract value at location specified by path from json_str
 json getJSONValue(const std::string& json_str, const std::string& path)
 {
-    json j(json_str);
-	return getJSONValue(j, path);
+    json json_parsed = json::parse(json_str);
+	return getJSONValue(json_parsed, path);
+}
+
+template <typename T>
+static T getValueConvert(const json& value)
+{
+    return value.get<T>();
+}
+
+template <typename T>
+static void copyOutput(const json& values, aSubRecord *prec, int i)
+{
+    epicsUInt32& nev = getASubNEV(prec, i);
+    T* val_out = (T*)getASubVAL(prec, i);
+    if (values.is_array()) {
+        epicsUInt32 ncopy = std::min((epicsUInt32)values.size(), getASubNOV(prec, i));
+        for(size_t j=0; j<ncopy; ++j) {
+            val_out[j] = getValueConvert<T>(values.at(j));
+        }
+        nev = ncopy;
+    } else {
+        val_out[0] = getValueConvert<T>(values);
+        nev = 1;        
+    }
 }
 
  /**
@@ -90,77 +159,103 @@ json getJSONValue(const std::string& json_str, const std::string& path)
  *  @ingroup asub_functions
  *  @param[in] prec Pointer to aSub record
  */
+ // input A is JSON to parseJSON
+ // input B onwards are paths
+ // output B onwards are value extracted
+
+
 static long parseJSON(aSubRecord *prec)
 {
-    std::string json_in((const char*)(prec->a)); /* waveform CHAR data */
-    std::string path_in((const char*)(prec->b)); /* waveform CHAR data */
-	char *str_tmp, *str_ptr, *saveptr, *memptr;
-	int i;
-
-    epicsUInt32 len_in = *(epicsUInt32*)(prec->b); /* usually NORD from input char waveform */
-	epicsUInt32 mode = *(epicsUInt32*)(prec->c);
-	epicsOldString* delim_in = (epicsOldString*)(prec->d);
-	epicsUInt32 split_len = *(epicsUInt32*)(prec->e);
-	epicsOldString* str_out;
-	epicsUInt32 len_out = 0;
-
-    json value = getJSONValue(json_in, path_in);
-    if (value.is_array()) {
-        1;
-    }
-        
-    if (prec->fta != menuFtypeCHAR || prec->ftb != menuFtypeCHAR || prec->ftc != menuFtypeULONG || 
-	       prec->ftd != menuFtypeSTRING || (mode == 2 && prec->fte != menuFtypeULONG) || prec->ftvu != menuFtypeULONG)
-	{
-         errlogPrintf("%s incorrect input type. Should be FTA (CHAR), FTB (ULONG), FTC (ULONG), FTD (STRING), FTE (ULONG), FTVU (ULONG)", prec->name);
+    if (prec->fta != menuFtypeCHAR) {
+         errlogPrintf("%s incorrect input type. Should be FTA (CHAR)", prec->name);
 		 return -1;
-	}
+    }
+    if (prec->ftva != menuFtypeULONG) {
+         errlogPrintf("%s incorrect input type. Should be FTVA (ULONG)", prec->name);
+		 return -1;
+    }
+    epicsUInt32& nprocessed = *(epicsUInt32*)getASubVAL(prec, 0); // VALA
+    nprocessed = 0; // number of processed input links
+    try {
+        std::string json_str((const char*)(prec->a)); /* waveform CHAR data */    
+        json json_parsed = json::parse(json_str);
+        // loop over fields from B to U
+        int max_index = 'U' - 'A';
+        for(int i=1; i<max_index; ++i) {
+            std::string path = getASubStringInput(prec, i);
+            if (path.size() == 0) {
+                continue;
+            }
+            json value = getJSONValue(json_parsed, path);
+            if (value.is_object()) {
+                errlogPrintf("%s incorrect return json type (object) for field %c.", prec->name, 'A' + i);
+                return -1;
+            }
+            epicsUInt32& nev = getASubNEV(prec, i);
+            epicsUInt32 nov = getASubNOV(prec, i);
+            switch(getASubFTV(prec, i)) {
+                case menuFtypeSTRING:
+                    memset(getASubVAL(prec, i), 0, sizeof(epicsOldString));
+                    if (value.is_string()) {
+                        strncpy((char*)getASubVAL(prec, i), value.get<std::string>().c_str(), sizeof(epicsOldString));
+                    } else {
+                        strncpy((char*)getASubVAL(prec, i), nlohmann::to_string(value).c_str(), sizeof(epicsOldString));
+                    }
+                    nev = 1;
+                    break;
+                    
+                case menuFtypeCHAR:
+                case menuFtypeUCHAR:
+                    memset(getASubVAL(prec, i), 0, nov);
+                    if (value.is_string()) {
+                        strncpy((char*)getASubVAL(prec, i), value.get<std::string>().c_str(), nov);
+                        nev = std::min(nov, (epicsUInt32)value.get<std::string>().size());
+                    } else {
+                        strncpy((char*)getASubVAL(prec, i), nlohmann::to_string(value).c_str(), nov);
+                        nev = std::min(nov, (epicsUInt32)nlohmann::to_string(value).size());
+                    }
+                    break;
 
-    if (prec->noa < len_in) /* check input space */
-	{
-	    len_in = prec->noa;
-	}
+                case menuFtypeFLOAT:
+                    copyOutput<float>(value, prec, i);
+                    break;
 
-    /*	Maybe could use prec->nea ? Think it is set by db link but not by CA */
-	
-    /* output split strings to A -> T (index 0->19) with number of strings in VALU */ 
-	for(i = 0; str_ptr != NULL && i < 20; ++i)
-	{
-	    if (getFtv(prec, i) != menuFtypeSTRING)
-		{
-             errlogPrintf("%s incorrect output type FTV%c != STRING", prec->name, 'A' + i);
-		     return -1;
-		}
-		if (getNov(prec, i) != 1)
-		{
-             errlogPrintf("%s incorrect output size NOV%c != 1", prec->name, 'A' + i);
-		     return -1;
-		}
-		
-		str_out = getVal(prec, i);
-	    memset(str_out[0], '\0', sizeof(epicsOldString));
-	    strncpy(str_out[0], str_ptr, sizeof(epicsOldString)-1);
-		*(getNev(prec, i)) = 1;
-	}
+                case menuFtypeDOUBLE:
+                    copyOutput<double>(value, prec, i);
+                    break;
 
-	len_out = i;
-	free(str_tmp);
+                case menuFtypeLONG:
+                    copyOutput<epicsInt32>(value, prec, i);
+                    break;
 
-	/* NULL out any remaining string outputs */
-	for(i=len_out; i<20; ++i)
-	{
-	    if (getFtv(prec, i) == menuFtypeSTRING)
-		{
-		    str_out = getVal(prec, i);
-	        memset(str_out[0], '\0', sizeof(epicsOldString));
-		}
-		*(getNev(prec, i)) = 0;
-	}
+                case menuFtypeULONG:
+                    copyOutput<epicsUInt32>(value, prec, i);
+                    break;
 
-	*(epicsUInt32*)(prec->valu) = len_out;
-	prec->nevu = 1;
+                case menuFtypeSHORT:
+                    copyOutput<epicsInt16>(value, prec, i);
+                    break;
 
-    return 0; /* process output links */
+                case menuFtypeUSHORT:
+                    copyOutput<epicsUInt16>(value, prec, i);
+                    break;
+
+                case menuFtypeENUM:
+                    copyOutput<epicsUInt16>(value, prec, i);
+                    break;
+                
+                default:
+                    errlogPrintf("%s unknown output FTV type for field %c.", prec->name, 'A' + i);
+                    return -1;
+            }
+            ++nprocessed;
+        }
+    }
+    catch(const std::exception& ex) {
+        errlogPrintf("%s error %s.", prec->name, ex.what());
+        return -1;
+    }
+    return 0; /* process record output links */
 }
 
 extern "C" {

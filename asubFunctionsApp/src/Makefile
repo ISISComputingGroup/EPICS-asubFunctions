@@ -10,6 +10,7 @@ include $(TOP)/configure/CONFIG
 
 LIBRARY_IOC += asubFunctions
 USR_INCLUDES += -I"$(TOP)/../../../libraries/master/jsonformoderncpp" -I"$(TOP)/../../../libraries/master/boost/include"
+USR_CXXFLAGS_WIN32 += -DNOMINMAX
 
 # xxxRecord.h will be created from xxxRecord.dbd
 #DBDINC += xxxRecord

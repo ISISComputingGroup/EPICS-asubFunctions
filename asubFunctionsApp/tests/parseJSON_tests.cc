@@ -1,5 +1,4 @@
 #include <string>
-#include <epicsThread.h>
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
@@ -26,7 +25,8 @@ json json_test_data = {
 
 namespace {
 
-    TEST(ParseJSONTests, test_GIVEN_action_only_THEN_parses_ok) {
+    TEST(ParseJSONTests, test_GIVEN_data_and_path_THEN_parses_ok) {
+        // Given
         json value1 = getJSONValue(json_test_data, "/f");
         json value2 = getJSONValue(json_test_data, "/a/i");
         json value3 = getJSONValue(json_test_data, "/array");
@@ -41,6 +41,5 @@ namespace {
         ASSERT_EQ(value4, 10);
         ASSERT_EQ(value5, "Test");
     }
-
 
 }
