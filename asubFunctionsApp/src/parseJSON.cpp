@@ -26,7 +26,7 @@ template <typename T>
 static T* getASubFieldPtr(T* field_a, T* field_b, int i)
 {
     ptrdiff_t step = field_b - field_a; // assumes fields A and B are consecutive in structure
-	return field_a + i * step;
+    return field_a + i * step;
 }
 
 /** 
@@ -78,10 +78,10 @@ static epicsEnum16 getASubFT(aSubRecord *prec, int i)
 
 // return blank string iof invalid type so we skip it
 std::string getASubStringInput(aSubRecord *prec, int i) {
-    epicsEnum16 ftv = getASubFT(prec, i);
-    if (ftv == menuFtypeCHAR || ftv == menuFtypeUCHAR) {        
+    epicsEnum16 ft = getASubFT(prec, i);
+    if (ft == menuFtypeCHAR || ft == menuFtypeUCHAR) {
         return (const char*)getASubInput(prec, i);
-    } else if (ftv == menuFtypeSTRING && getASubNO(prec, i) == 1) {
+    } else if (ft == menuFtypeSTRING && getASubNO(prec, i) == 1) {
         return (const char*)getASubInput(prec, i);
     } else {
         return "";
@@ -116,19 +116,19 @@ static json getJSONValueRecurse(const json& j, const std::vector<std::string>& p
 // extract value at location specified by path from json
 json getJSONValue(const json& j, const std::string& path)
 {
-	std::vector<std::string> path_bits;
-	boost::algorithm::split(path_bits, path, boost::is_any_of("/"), boost::token_compress_on);
+    std::vector<std::string> path_bits;
+    boost::algorithm::split(path_bits, path, boost::is_any_of("/"), boost::token_compress_on);
     // remove any blank path elements, usually from initial or final / in path 
     auto r = std::remove(path_bits.begin(), path_bits.end(), "");
     path_bits.erase(r, path_bits.end());
-	return getJSONValueRecurse(j, path_bits, 0);
+    return getJSONValueRecurse(j, path_bits, 0);
 }
 
 // extract value at location specified by path from json_str
 json getJSONValue(const std::string& json_str, const std::string& path)
 {
     json json_parsed = json::parse(json_str);
-	return getJSONValue(json_parsed, path);
+    return getJSONValue(json_parsed, path);
 }
 
 template <typename T>
@@ -168,11 +168,11 @@ static long parseJSON(aSubRecord *prec)
 {
     if (prec->fta != menuFtypeCHAR) {
          errlogPrintf("%s incorrect input type. Should be FTA (CHAR)", prec->name);
-		 return -1;
+         return -1;
     }
     if (prec->ftva != menuFtypeULONG) {
-         errlogPrintf("%s incorrect input type. Should be FTVA (ULONG)", prec->name);
-		 return -1;
+         errlogPrintf("%s incorrect output type. Should be FTVA (ULONG)", prec->name);
+         return -1;
     }
     epicsUInt32& nprocessed = *(epicsUInt32*)getASubVAL(prec, 0); // VALA
     nprocessed = 0; // number of processed input links
@@ -195,13 +195,26 @@ static long parseJSON(aSubRecord *prec)
             epicsUInt32 nov = getASubNOV(prec, i);
             switch(getASubFTV(prec, i)) {
                 case menuFtypeSTRING:
-                    memset(getASubVAL(prec, i), 0, sizeof(epicsOldString));
-                    if (value.is_string()) {
-                        strncpy((char*)getASubVAL(prec, i), value.get<std::string>().c_str(), sizeof(epicsOldString));
+                    if (value.is_array()) {
+                        epicsUInt32 ncopy = std::min((epicsUInt32)value.size(), nov);
+                        epicsOldString* val_out = (epicsOldString*)getASubVAL(prec, i);
+                        for(size_t j=0; j<ncopy; ++j) {
+                            if (value.at(j).is_string()) {
+                                strncpy(val_out[j], value.at(j).get<std::string>().c_str(), sizeof(epicsOldString));
+                            } else {
+                                strncpy(val_out[j], nlohmann::to_string(value.at(j)).c_str(), sizeof(epicsOldString));
+                            }
+                        }
+                        nev = ncopy;
                     } else {
-                        strncpy((char*)getASubVAL(prec, i), nlohmann::to_string(value).c_str(), sizeof(epicsOldString));
+                        memset(getASubVAL(prec, i), 0, sizeof(epicsOldString));
+                        if (value.is_string()) {
+                            strncpy((char*)getASubVAL(prec, i), value.get<std::string>().c_str(), sizeof(epicsOldString));
+                        } else {
+                            strncpy((char*)getASubVAL(prec, i), nlohmann::to_string(value).c_str(), sizeof(epicsOldString));
+                        }
+                        nev = 1;
                     }
-                    nev = 1;
                     break;
                     
                 case menuFtypeCHAR:
@@ -259,5 +272,5 @@ static long parseJSON(aSubRecord *prec)
 }
 
 extern "C" {
-epicsRegisterFunction(parseJSON); /* must also be mentioned in asubFunctions.dbd */
+    epicsRegisterFunction(parseJSON); /* must also be mentioned in asubFunctions.dbd */
 }

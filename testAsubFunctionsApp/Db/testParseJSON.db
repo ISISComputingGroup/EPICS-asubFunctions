@@ -60,4 +60,9 @@ record(aSub, "$(P)PARSEJSON")
   field(FTVE, "DOUBLE")
   field(NOVE, "10")
 
+  field(INPF, "$(P)JSON_PATH4")
+  field(FTF, "STRING")
+  field(FTVF, "LONG")
+  field(NOVF, "10")
+
 } 
