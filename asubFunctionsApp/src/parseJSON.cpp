@@ -1,6 +1,25 @@
+/*************************************************************************\ 
+* Copyright (c) 2024 Science and Technology Facilities Council (STFC), GB. 
+* All rights reverved. 
+* This file is distributed subject to a Software License Agreement found 
+* in the LICENSE file that is included with this distribution. 
+\*************************************************************************/ 
+
 //
-// @file parseJSON.cpp
-// @ingroup asub_functions
+// define parseJSON function to be called from an EPICS aSub record
+// to parse JSON and extract elements as per supplied paths
+// is able to return scalars and arrays from JSON into DB records
+// see documentation of function below
+//
+// Function was originally developed for parsing JSON returned
+// by devices supporting the Sample Environment Communication Protocol (SECoP)
+// designed by the International Society for Sample Environment (ISSE)
+// See https://sampleenvironment.github.io/secop-site/
+//
+// For examples of usage see parseJSON_tests.cc in the tests directory
+//
+// For an example of usage in an EPICS aSub record
+// see https://github.com/ISISComputingGroup/he3nmr
 //
 
 #include <cstring>
@@ -22,17 +41,20 @@ using json = nlohmann::json;
 
 #include <parseJSON.h>
 
+// calculate reference to field index i of a set of adjacent fields of the same data type 
+// passed fields A and B must be consecutive in the structure
+// so we can then calculate the byte size of each element and hence the correct offset
 template <typename T>
 static T* getASubFieldPtr(T* field_a, T* field_b, int i)
 {
-    ptrdiff_t step = field_b - field_a; // assumes fields A and B are consecutive in structure
+    ptrdiff_t step = field_b - field_a;
     return field_a + i * step;
 }
 
-/** 
- * get reference to VALA etc. output fields via index. Assumes VALA, VALB etc. are packed sequentially in structure and 
- * of same data type size so can move pointer by fixed amount. Index 0 -> 'VALA' etc.
- */
+// get reference to VAL* output fields amnd others via index.
+// Assumes VALA, VALB etc. are packed sequentially in structure and 
+// of same data type size so can move pointer by fixed amount.
+// Index 0 -> 'VALA' etc.
 static void* getASubVAL(aSubRecord *prec, int i)
 {
     return *(getASubFieldPtr<void*>(&(prec->vala), &(prec->valb), i));
@@ -53,19 +75,16 @@ static epicsUInt32 getASubNE(aSubRecord *prec, int i)
     return *(getASubFieldPtr<epicsUInt32>(&(prec->nea), &(prec->neb), i));
 }
 
-/** get NOVA etc. fields via index. Assumes NOVA, NOVB are consecutive types */
 static epicsUInt32 getASubNOV(aSubRecord *prec, int i)
 {
     return *(getASubFieldPtr<epicsUInt32>(&(prec->nova), &(prec->novb), i));
 }
 
-/** get NEVA etc. fields via index */
 static epicsUInt32& getASubNEV(aSubRecord *prec, int i)
 {
     return *(getASubFieldPtr<epicsUInt32>(&(prec->neva), &(prec->nevb), i));
 }
 
-/** get FTVA etc. fields via index */
 static epicsEnum16 getASubFTV(aSubRecord *prec, int i)
 {
     return *(getASubFieldPtr<epicsEnum16>(&(prec->ftva), &(prec->ftvb), i));
@@ -76,7 +95,8 @@ static epicsEnum16 getASubFT(aSubRecord *prec, int i)
     return *(getASubFieldPtr<epicsEnum16>(&(prec->fta), &(prec->ftb), i));
 }
 
-// return blank string iof invalid type so we skip it
+// If field is of single string or char array type return its value
+// return blank string if invalid type (string array or numeric) so we skip it
 std::string getASubStringInput(aSubRecord *prec, int i) {
     epicsEnum16 ft = getASubFT(prec, i);
     if (ft == menuFtypeCHAR || ft == menuFtypeUCHAR) {
@@ -88,32 +108,34 @@ std::string getASubStringInput(aSubRecord *prec, int i) {
     }        
 }
 
-// recursively walk path_bits to get value of interest
+// recursively walk path_bits in JSON to get value of interest
+// level is current point in tree and increemented each recursion
 static json getJSONValueRecurse(const json& j, const std::vector<std::string>& path_bits, int level)
 {
     if (level < path_bits.size()) {
-        const std::string& key = path_bits[level];
+        const std::string& key = path_bits[level]; // key to locate for next iteration
         if (j.is_array()) {
             char* endptr = NULL;
-            long index = strtol(key.c_str(), &endptr, 10);
+            long index = strtol(key.c_str(), &endptr, 10);  // if JSON array at this level we expect key to be an numeric index
             if ( endptr != NULL && (endptr - key.c_str()) == key.size() &&
                  index >= 0 && index < j.size() ) {             
                 return getJSONValueRecurse(j.at(index), path_bits, level + 1);
             } else {
                 throw std::runtime_error("array index " + std::to_string(index) + " is either out of range or not a valid integer");
             }
-        } else if (j.contains(key)) {
+        } else if (j.contains(key)) { // pull substructure and recurse
             return getJSONValueRecurse(j.at(key), path_bits, level + 1);
         }
         else {
             throw std::runtime_error("cannot find key " + key + " at level " + std::to_string(level));
         }
     } else {
-        return j;
+        return j; // reached end of path, return result
     }
 }
 
 // extract value at location specified by path from json
+// path is like /a/b/c with a,b,c being field names or array indexes
 json getJSONValue(const json& j, const std::string& path)
 {
     std::vector<std::string> path_bits;
@@ -137,10 +159,11 @@ static T getValueConvert(const json& value)
     return value.get<T>();
 }
 
+// copy json values to an aSub record output field
 template <typename T>
 static void copyOutput(const json& values, aSubRecord *prec, int i)
 {
-    epicsUInt32& nev = getASubNEV(prec, i);
+    epicsUInt32& nev = getASubNEV(prec, i); // reference for number of items written to an array output field
     T* val_out = (T*)getASubVAL(prec, i);
     if (values.is_array()) {
         epicsUInt32 ncopy = std::min((epicsUInt32)values.size(), getASubNOV(prec, i));
@@ -154,16 +177,10 @@ static void copyOutput(const json& values, aSubRecord *prec, int i)
     }
 }
 
- /**
- *  Convert a character waveform into a separate strings based on a separating character
- *  @ingroup asub_functions
- *  @param[in] prec Pointer to aSub record
- */
- // input A is JSON to parseJSON
- // input B onwards are paths
- // output B onwards are value extracted
-
-
+// input A is JSON for parseJSON
+// output A is number of input links processed (for debugging)
+// input B onwards are paths to items in JSON to extract
+// output B onwards are value extracted from path specified in corresponding input
 static long parseJSON(aSubRecord *prec)
 {
     if (prec->fta != menuFtypeCHAR) {
